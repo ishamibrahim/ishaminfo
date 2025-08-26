@@ -9,8 +9,8 @@ Ishamibrahim info website built using flask
 * Go to `http://127.0.0.1:5000/graphql`
 * Run commands as shown below
 
-### 1. Fetch item example (query)
-```json
+### 1. Fetch all items example (query)
+```json lines
 {	
   query: users {
     id 
@@ -21,10 +21,27 @@ Ishamibrahim info website built using flask
 	}
 }
 ```
-### 2. Create item example (mutation)
-```json
+### 2. Fetch a specific user using username example (query)
+```json lines
+{	
+  query: user (username: "charlie1"){
+    id 
+  	username 
+  	email 
+  	fname
+    lname
+	}
+}
+```
+### 3. Create item example (mutation)
+```json lines
+
 mutation {
-  createUser(username: "majorroger2", email: "roger2@goodangadi.com",fname: "Major", lname: "Roger") {
+  createUser(username: "majorroger2",
+  email: "roger2@goodangadi.com",
+  fname: "Major",
+  lname: "Roger"
+  ) {
     user {
       id
       username
@@ -34,13 +51,14 @@ mutation {
     }
   }
 }
+
 ```
 
-### 2. Update item example (mutation)
-```json
+### 4. Update item example (mutation)
+```json lines
 mutation UpdateUser($id: ID!, $username: String, $fname: String, $lname: String) {
     updateUser(id: $id, username: $username, fname: $fname, lname: $lname) {
-      user {  
+      user {
         id
         username
         fname
@@ -50,11 +68,15 @@ mutation UpdateUser($id: ID!, $username: String, $fname: String, $lname: String)
 }
 ```
 In the *Query variables* section at the bottom of the screen, add the updates in json form
-```json
+```json lines
 {
   "id": 6,
   "username": "thedarkknight",
   "fname": "Bruce", 
   "lname": "Wayne"
 }
+```
+### 5. Delete item example (mutation)
+```json lines
+
 ```

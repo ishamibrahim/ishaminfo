@@ -1,9 +1,11 @@
 from tokenize import String
 
-from graphene import ID, ObjectType, Int, Float, String, DateTime
+from graphene import ID, ObjectType, Int, Float, String, DateTime, Boolean
+from graphene_sqlalchemy import SQLAlchemyObjectType
+from db_models import *
+import graphene
 
-
-class Role(ObjectType):
+class Role(SQLAlchemyObjectType):
     id = ID()
     name = String(required=True)
     description = String()
@@ -11,7 +13,7 @@ class Role(ObjectType):
     updated_at = DateTime()
 
 
-class State(ObjectType):
+class State(SQLAlchemyObjectType):
     id = ID()
     name = String(required=True)
     abbreviation = String()
@@ -19,7 +21,7 @@ class State(ObjectType):
     updated_at = DateTime()
 
 
-class District(ObjectType):
+class District(SQLAlchemyObjectType):
     id = ID()
     name = String(required=True)
     area = Float()
@@ -28,7 +30,7 @@ class District(ObjectType):
     updated_at = DateTime()
 
 
-class City(ObjectType):
+class City(SQLAlchemyObjectType):
     id = ID()
     name = String(required=True)
     type = String()
@@ -38,7 +40,7 @@ class City(ObjectType):
     updated_at = DateTime()
 
 
-class Address(ObjectType):
+class Address(SQLAlchemyObjectType):
     id = ID()
     apt_house_name = String()
     street = String()
@@ -47,7 +49,7 @@ class Address(ObjectType):
     updated_at = DateTime()
 
 
-class Product(ObjectType):
+class Product(SQLAlchemyObjectType):
     id = ID()
     name = String(required=True)
     price = Int()
@@ -55,19 +57,13 @@ class Product(ObjectType):
     updated_at = DateTime()
 
 
-class User(ObjectType):
-    id = ID()
-    username = String(required=True)
-    fname = String()
-    lname = String()
-    email = String()
-    password = String()
-    #address = Address()
-    created_at = DateTime()
-    updated_at = DateTime()
+class User(SQLAlchemyObjectType):
+    class Meta:
+        model = UserModel
+        interfaces = (graphene.relay.Node,)
 
 
-class UserProfile(ObjectType):
+class UserProfile(SQLAlchemyObjectType):
     id = ID()
     user = User()
     role = Role()
@@ -75,7 +71,7 @@ class UserProfile(ObjectType):
     updated_at = DateTime()
 
 
-class Shop(ObjectType):
+class Shop(SQLAlchemyObjectType):
     id = ID()
     name = String(required=True)
     address = Address()
@@ -84,7 +80,7 @@ class Shop(ObjectType):
     updated_at = DateTime()
 
 
-class ProductShop(ObjectType):
+class ProductShop(SQLAlchemyObjectType):
     id = ID()
     product = Product()
     shop = Shop()
@@ -93,14 +89,14 @@ class ProductShop(ObjectType):
     updated_at = DateTime()
 
 
-class TransactionType(ObjectType):
+class TransactionType(SQLAlchemyObjectType):
     id = ID()
     type = String(required=True)  #CASH, CARD, DEBT
     created_at = DateTime()
     updated_at = DateTime()
 
 
-class Transaction(ObjectType):
+class Transaction(SQLAlchemyObjectType):
     id = ID()
     buyer = UserProfile()
     product = ProductShop()
@@ -110,7 +106,7 @@ class Transaction(ObjectType):
     updated_at = DateTime()
 
 
-class Debt(ObjectType):
+class Debt(SQLAlchemyObjectType):
     id = ID()
     debiter = UserProfile()
     creditor = Shop()

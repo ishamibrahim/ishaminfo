@@ -1,5 +1,7 @@
 # Mutations means write operations on an object
-from graphene import Mutation, String, Field, ObjectType, ID
+from datetime import datetime
+
+from graphene import Mutation, String, Field, ObjectType, ID, Boolean
 
 from db_models import UserModel
 from main import db
@@ -18,6 +20,7 @@ class CreateUser(Mutation):
     user = Field(lambda: User)
 
     def mutate(self, info, username, email=None, fname=None, lname=None, password=None):
+
         # Create new user instance
         new_user = UserModel(username=username, email=email, fname=fname, lname=lname)
         if password:
@@ -45,10 +48,10 @@ class UpdateUser(Mutation):
 
     def mutate(self, info, **kwargs):
 
-        if "id" in kwargs.keys():
-            id = kwargs["id"]
+        if "username" in kwargs.keys():
+            username = kwargs["username"]
             # Create new user instance
-            user = UserModel.query.get(id)
+            user = UserModel.query.get(username=username)
             if not user:
                 raise Exception(f"User {id} does not exist")
         else:
@@ -64,8 +67,58 @@ class UpdateUser(Mutation):
         return UpdateUser(user=user)
 
 
+class SoftDeleteUser(Mutation):
+    class Arguments:
+        username = String(required=True)
+
+    # Response
+    success = Boolean()
+    message = String(required=True)
+
+    def mutate(self, info, username):
+        try:
+            user = UserModel.query.get(username=username)
+            if not user:
+                return SoftDeleteUser(success=False, message=f"User {id} does not exist")
+            if not user.is_active:
+                return SoftDeleteUser(success=False, message=f"User {id} is not an active user.")
+
+            user.is_active = False
+            user.updated_at = datetime.utcnow()
+            #Save changes
+            db.session.commit()
+            return SoftDeleteUser(success=True, message=f"User {id} has been deleted.")
+
+        except Exception as e:
+            db.session.rollback()
+            return HardDeleteUser(success=False, message=f"Error while deleting user: {str(e)}")
+
+
+class HardDeleteUser(Mutation):
+    class Arguments:
+        username = String(required=True, description="Username to be permanently deleted")
+
+    # Response
+    success = Boolean()
+    message = String(required=True)
+
+    def mutate(self, info, username):
+        try:
+            user = UserModel.query.get(username=username)
+            if not user:
+                return HardDeleteUser(success=False, message=f"User {id} does not exist")
+
+            # Save
+            db.session.delete(user)
+            db.session.commit()
+            return HardDeleteUser(success=True, message=f"User {id} has been deleted permanently")
+        except Exception as e:
+            db.session.rollback()
+            return HardDeleteUser(success=False, message=f"Error while deleting user: {str(e)}")
 # Registering all mutations
 class Mutation(ObjectType):
     create_user = CreateUser.Field()
     update_user = UpdateUser.Field()
+    soft_delete_user = SoftDeleteUser.Field()
+    hard_delete_user = HardDeleteUser.Field()
 
